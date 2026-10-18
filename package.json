@@ -49,7 +49,7 @@
     "status": "node src/cli.js status",
     "probe": "node src/cli.js probe",
     "serve": "node src/cli.js serve",
-    "test": "node --test test/",
+    "test": "node --test",
     "bundle": "esbuild src/cli.js --bundle --platform=node --format=cjs --target=node20 --outfile=build/chargeguard.cjs",
     "build": "npm run bundle && pkg build/chargeguard.cjs --targets node22.23.2-win-x64,node22.23.2-linux-x64 --out-path dist"
   },
