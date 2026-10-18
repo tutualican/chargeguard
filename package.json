@@ -1,0 +1,60 @@
+{
+  "name": "chargeguard",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Cross-brand battery charge limiting for Windows and Linux: stop charging at a point or hold a range. Battery only.",
+  "license": "Apache-2.0",
+  "author": "tutualican",
+  "homepage": "https://github.com/tutualican/chargeguard#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tutualican/chargeguard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tutualican/chargeguard/issues"
+  },
+  "keywords": [
+    "battery",
+    "charge-limit",
+    "charge-threshold",
+    "charge-control",
+    "windows",
+    "linux",
+    "wmi",
+    "sysfs",
+    "huawei",
+    "asus",
+    "lenovo",
+    "conservation-mode"
+  ],
+  "bin": {
+    "chargeguard": "src/cli.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "src/",
+    "docs/",
+    "README.md",
+    "README.tr.md",
+    "DESIGN.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "detect": "node src/cli.js detect",
+    "caps": "node src/cli.js caps",
+    "status": "node src/cli.js status",
+    "probe": "node src/cli.js probe",
+    "serve": "node src/cli.js serve",
+    "test": "node --test test/",
+    "bundle": "esbuild src/cli.js --bundle --platform=node --format=cjs --target=node20 --outfile=build/chargeguard.cjs",
+    "build": "npm run bundle && pkg build/chargeguard.cjs --targets node22.23.2-win-x64,node22.23.2-linux-x64 --out-path dist"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.23.0",
+    "esbuild": "^0.28.2"
+  }
+}

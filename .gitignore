@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build artifacts (produced by `npm run build` / CI)
+build/
+dist/
+*.pkg
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local config / secrets
+.env
+.env.*
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
