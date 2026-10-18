@@ -2,6 +2,7 @@
 import { classExists } from '../wmi.js';
 import { createLinuxSysfsBackend } from './linux-sysfs.js';
 import { createLinuxIdeapadBackend } from './linux-ideapad.js';
+import { createLinuxTlpBackend } from './linux-tlp.js';
 import { createWinHuaweiBackend } from './win-huawei.js';
 import { createWinAsusBackend } from './win-asus.js';
 import { createWinUnsupportedBackend } from './win-unsupported.js';
@@ -17,8 +18,16 @@ import { createWinUnsupportedBackend } from './win-unsupported.js';
 //   }
 
 function selectLinux() {
-  // Jenerik sysfs çoğu markayı kapsar (thinkpad/acpi, asus-wmi, acer-wmi, huawei-wmi, dell-wmi-battery...).
-  return createLinuxSysfsBackend() || createLinuxIdeapadBackend() || null;
+  const force = String(process.env.CG_BACKEND || '').toLowerCase();
+  const sysfs = () => createLinuxSysfsBackend() || createLinuxIdeapadBackend() || null;
+
+  if (force === 'tlp') return createLinuxTlpBackend() || sysfs();
+  if (force === 'sysfs') return sysfs();
+  if (force === 'ideapad') return createLinuxIdeapadBackend() || null;
+
+  // Otomatik: önce doğrudan çekirdek sysfs (bağımlılıksız, en geniş yol).
+  // Eşik denetimi hiç yoksa TLP'yi son çare dene (bazı modellerde üretici yolunu kullanır).
+  return sysfs() || createLinuxTlpBackend() || null;
 }
 
 function selectWindows(dev) {

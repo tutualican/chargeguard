@@ -58,6 +58,22 @@ yalanı söylemez.
 > `desteklenmiyor` der. Kesin hüküm ve öneriler için `chargeguard doctor`
 > (menüde **[9]**) çalıştırın.
 
+### TLP (Linux)
+
+[TLP](https://linrunner.de/tlp/) kullanıyor musunuz? ChargeGuard onu doğrudan
+sürebilir:
+
+```bash
+sudo chargeguard tlp                       # TLP kurulu mu? (konum/sürüm)
+sudo chargeguard --backend tlp hold 65 80  # tlp setcharge 65 80
+sudo chargeguard --backend tlp stop 75     # tlp setcharge 0 75
+sudo chargeguard --backend tlp off         # tlp setcharge off
+```
+
+Otomatik mod önce doğrudan çekirdek sysfs'i (bağımlılıksız) kullanır; yalnızca
+sysfs denetimi yoksa TLP'ye düşer. TLP'yi zorlamak için `--backend tlp` veya
+`CG_BACKEND=tlp` kullanın.
+
 ## Kurulum
 
 ### Hazır derlemeler
@@ -180,8 +196,9 @@ chargeguard/
 │  ├─ wmi.js              Windows WMI / PowerShell yardımcıları
 │  └─ backends/
 │     ├─ index.js            OS + marka + prob ile seçim
-│     ├─ linux-sysfs.js      jenerik (çok marka)
+│     ├─ linux-sysfs.js      evrensel keşif (çok marka)
 │     ├─ linux-ideapad.js    koruma modu
+│     ├─ linux-tlp.js        TLP (`tlp setcharge`)
 │     ├─ win-huawei.js       ACPI-WMI (doğrulandı)
 │     ├─ win-asus.js         AsusAtkWmi (denenmedi)
 │     └─ win-unsupported.js  dürüst "desteklenmiyor"

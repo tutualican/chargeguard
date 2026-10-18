@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-18
+
+### Added
+- **TLP backend (Linux).** On systems that already use
+  [TLP](https://linrunner.de/tlp/), ChargeGuard can drive it directly through
+  `tlp setcharge <start> <stop>` and `tlp setcharge off`:
+  - `chargeguard tlp` — is TLP installed? (path/version)
+  - `chargeguard --backend tlp hold 65 80` / `stop 75` / `off`
+  - `--backend tlp` (or `CG_BACKEND=tlp`) forces TLP; automatic mode still
+    prefers direct kernel sysfs and falls back to TLP only when no sysfs charge
+    control exists.
+- `doctor` now reports TLP presence/version on Linux.
+- Tests for TLP command generation, status read-back and error mapping.
+
+### Changed
+- Help text no longer says "private" (the project is public).
+- Documented TLP usage in both READMEs.
+
 ## [0.4.0] - 2026-10-18
 
 ### Added
@@ -73,7 +91,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI (`detect`, `probe`, `caps`, `status`, `stop`, `hold`, `conserve`, `off`).
 - JSON API (`serve`) intended for a future GUI.
 
-[Unreleased]: https://github.com/tutualican/chargeguard/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/tutualican/chargeguard/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/tutualican/chargeguard/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/tutualican/chargeguard/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/tutualican/chargeguard/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/tutualican/chargeguard/compare/v0.1.0...v0.2.0

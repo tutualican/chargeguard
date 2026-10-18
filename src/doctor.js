@@ -2,8 +2,9 @@
 import { open } from './core.js';
 import { detect } from './detect.js';
 import { probeClasses, biosCandidates } from './wmi.js';
+import { tlpInfo } from './backends/linux-tlp.js';
 
-const KNOWN = ['linux-sysfs', 'linux-ideapad', 'win-huawei', 'win-asus'];
+const KNOWN = ['linux-sysfs', 'linux-ideapad', 'linux-tlp', 'win-huawei', 'win-asus'];
 
 // Saf hüküm mantığı (test edilebilir).
 export function verdictFor(backendId, caps) {
@@ -34,6 +35,12 @@ export function guidanceFor(device, backendId, caps) {
   if (backendId === 'linux-sysfs') {
     lines.push('Linux: jenerik sysfs bulundu. `sudo chargeguard hold <lo> <hi>` çalışır.');
     if (!caps.range) lines.push('Bu sürücü yalnızca üst eşiği (stop) sunuyor; aralık için çekirdek sürücüsü gerekir.');
+    return lines;
+  }
+  if (backendId === 'linux-tlp') {
+    lines.push('Linux: TLP bulundu; eşikler `tlp setcharge` ile yönetiliyor.');
+    lines.push('`sudo chargeguard --backend tlp hold <lo> <hi>` (veya `stop <pct>` / `off`).');
+    lines.push('Not: TLP yapılandırması (/etc/tlp.conf) ayrıca geçerlidir; kalıcılık için ChargeGuard otomatik başlatmayı kullanın.');
     return lines;
   }
   if (backendId === 'linux-ideapad') {
@@ -97,6 +104,11 @@ export function doctor() {
     try {
       report.windows_probe = { classes: probeClasses(), bios_candidates: (biosCandidates().candidates || []) };
     } catch (e) { report.windows_probe = { error: String((e && e.message) || e) }; }
+  }
+
+  if (device.os === 'linux') {
+    try { report.linux_power = { tlp: tlpInfo() }; }
+    catch (e) { report.linux_power = { error: String((e && e.message) || e) }; }
   }
 
   return report;

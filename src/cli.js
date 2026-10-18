@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-// ChargeGuard CLI — sadece pil şarj sınırlama (özel proje).
+// ChargeGuard CLI — sadece pil şarj sınırlama.
 import { open } from './core.js';
 import { serve } from './server.js';
 import { probeClasses, biosCandidates } from './wmi.js';
 import { detect } from './detect.js';
 import { doctor } from './doctor.js';
+import { tlpInfo } from './backends/linux-tlp.js';
 import { runWatch } from './watch.js';
 import { interactiveMenu } from './menu.js';
 import { applyOnce, runDaemon } from './service.js';
@@ -27,13 +28,15 @@ function parseArgs(list) {
 }
 
 function help() {
-  console.log(`ChargeGuard — pil şarj sınırlama (ÖZEL, sadece pil)
+  console.log(`ChargeGuard — pil şarj sınırlama (sadece pil)
 
 Kullanım:
   chargeguard                  # MENÜ (argümansız; çift tıklayınca da bu açılır)
   chargeguard menu             # aynı menü
   chargeguard detect           # marka/model/OS
   chargeguard doctor           # bu cihazda ne yapılabilir? (net hüküm + öneri)
+  chargeguard tlp              # TLP kurulu mu? (sürüm/konum)
+  chargeguard --backend tlp hold <lo> <hi>   # TLP ('tlp setcharge') ile uygula
   chargeguard probe            # Windows'ta bulunan WMI sınıfları + BIOS adayları
   chargeguard caps             # bu cihazın yetenekleri
   chargeguard status           # pil %, AC/DC, eşikler
@@ -51,13 +54,21 @@ Not: Windows'ta WMI, Linux'ta sysfs yazımı için yönetici/root gerekir.`);
 }
 
 async function main() {
-  const [, , cmd, ...args] = process.argv;
+  // Global bayrak: --backend tlp|sysfs|ideapad (TLP'yi zorla seçmek için).
+  const raw = process.argv.slice(2);
+  for (let i = 0; i < raw.length; i++) {
+    const a = raw[i];
+    if (a === '--backend' && raw[i + 1] !== undefined) { process.env.CG_BACKEND = raw[i + 1]; raw.splice(i, 2); break; }
+    if (a.startsWith('--backend=')) { process.env.CG_BACKEND = a.slice('--backend='.length); raw.splice(i, 1); break; }
+  }
+  const [cmd, ...args] = raw;
   if (cmd === undefined || cmd === 'menu') { await interactiveMenu(); return; }
   const app = open();
 
   switch (cmd) {
     case 'detect': show(app.device); break;
     case 'doctor': show(doctor()); break;
+    case 'tlp': show({ backend: app.backend, ...tlpInfo(), kullanim: 'chargeguard --backend tlp hold <lo> <hi>' }); break;
     case 'caps': show({ device: app.device, backend: app.backend, capabilities: app.capabilities() }); break;
     case 'status': show(app.status()); break;
     case 'stop': show(app.stopAt(Number(args[0]))); break;
@@ -102,7 +113,7 @@ async function main() {
       });
       break;
     }
-    case '--version': case 'version': console.log('0.4.0'); break;
+    case '--version': case 'version': console.log('0.5.0'); break;
     case 'help': case '--help': case '-h': help(); break;
     default: help();
   }

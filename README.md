@@ -60,6 +60,21 @@ It is **honest by design**: if a device/brand has no supported path, it says
 Run **`chargeguard doctor`** (or menu **[9]**) on any machine to see exactly what
 works there:
 
+### TLP (Linux)
+
+Already using [TLP](https://linrunner.de/tlp/)? ChargeGuard can drive it directly:
+
+```bash
+sudo chargeguard tlp                       # is TLP installed? (path/version)
+sudo chargeguard --backend tlp hold 65 80  # tlp setcharge 65 80
+sudo chargeguard --backend tlp stop 75     # tlp setcharge 0 75
+sudo chargeguard --backend tlp off         # tlp setcharge off
+```
+
+Automatic mode prefers direct kernel sysfs (no dependency) and falls back to TLP
+only when no sysfs charge control exists. Force TLP with `--backend tlp` or
+`CG_BACKEND=tlp`.
+
 ## Install
 
 ### Prebuilt binaries
@@ -183,8 +198,9 @@ chargeguard/
 │  ├─ wmi.js              Windows WMI / PowerShell helpers
 │  └─ backends/
 │     ├─ index.js            OS + brand + probe selection
-│     ├─ linux-sysfs.js      generic (multi-brand)
+│     ├─ linux-sysfs.js      universal discovery (multi-brand)
 │     ├─ linux-ideapad.js    conservation mode
+│     ├─ linux-tlp.js        TLP (`tlp setcharge`)
 │     ├─ win-huawei.js       ACPI-WMI (verified)
 │     ├─ win-asus.js         AsusAtkWmi (untested)
 │     └─ win-unsupported.js  honest "unsupported"
