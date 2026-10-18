@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-18
+
+### Added
+- **Universal Linux discovery.** The generic sysfs backend no longer relies on a
+  fixed name list: it scans the battery directory **and** vendor platform
+  directories and uses whatever charge control is present — `charge_control_*`,
+  ThinkPad `charge_start/stop_threshold`, `charge_behaviour`
+  (`auto`/`inhibit-charge`), `conservation_mode` (IdeaPad) and `battery_care_limit`
+  (`lg-laptop`). This is what makes "works on every laptop" real on Linux, where
+  the kernel standardizes these attributes.
+- **`doctor` command** (also menu option **[9]** and `npm run doctor`): prints a
+  clear per-device verdict (`CALISIYOR` / `KISMI` / `DESTEKLENMIYOR`) with the
+  detected backend, capabilities, live status, and concrete next steps.
+- **Deeper Windows probe.** `probe` now checks a broad list of candidate vendor
+  WMI classes (Huawei, Asus, Lenovo, MSI, Acer, Dell DCPM, HP InstrumentedBIOS)
+  and reads any battery/charge **BIOS settings** exposed via HP/Dell/Lenovo WMI
+  (read-only) so unsupported machines can be diagnosed instead of failing silently.
+- New Linux tests covering the extra attribute families (ThinkPad, behaviour,
+  conservation, `battery_care_limit`) and `doctor` verdict/guidance logic.
+
+### Changed
+- `linux-sysfs` reports `conservation` as a first-class capability.
+- Updated compatibility docs and the Windows guidance strings.
+
 ## [0.3.0] - 2026-10-18
 
 ### Added
@@ -49,7 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI (`detect`, `probe`, `caps`, `status`, `stop`, `hold`, `conserve`, `off`).
 - JSON API (`serve`) intended for a future GUI.
 
-[Unreleased]: https://github.com/OWNER/chargeguard/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/OWNER/chargeguard/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/OWNER/chargeguard/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/OWNER/chargeguard/releases/tag/v0.1.0
+[Unreleased]: https://github.com/tutualican/chargeguard/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/tutualican/chargeguard/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/tutualican/chargeguard/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/tutualican/chargeguard/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/tutualican/chargeguard/releases/tag/v0.1.0

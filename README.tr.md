@@ -36,16 +36,27 @@ yalanı söylemez.
 
 | Marka | Linux | Windows |
 |---|---|---|
-| **Huawei** | ✅ jenerik sysfs (`huawei-wmi`) | ✅ ACPI-WMI `OemWMIfun` — **gerçek cihazda doğrulandı** |
-| **Asus** | ✅ jenerik sysfs (`asus-wmi`) | ⚠️ `AsusAtkWmi_WMNB` — denenmedi (donanım yok) |
-| **Lenovo** | ✅ ThinkPad `thinkpad_acpi` / IdeaPad koruma modu | ❌ açık API yok (Vantage/BIOS) |
-| **Acer** | ✅ jenerik sysfs (`acer-wmi`) | ❌ açık API yok |
-| **Dell** | ⚠️ `dell-wmi-battery` sürücüsü varsa | ❌ açık API yok |
-| **HP** | ⚠️ bazı modellerde sysfs | ❌ açık API yok |
-| **Diğer** (MSI/Samsung/Xiaomi…) | ⚠️ jenerik sysfs denenir | ❌ prob sonrası `desteklenmiyor` |
+| **Huawei** | ✅ sysfs (`huawei-wmi`) | ✅ ACPI-WMI `OemWMIfun` — **gerçek cihazda doğrulandı** |
+| **Asus** | ✅ sysfs (`asus-wmi`) | ⚠️ `AsusAtkWmi_WMNB` — denenmedi (donanım yok) |
+| **Lenovo** | ✅ ThinkPad `charge_*_threshold` / IdeaPad `conservation_mode` | ❌ açık API yok (Vantage/BIOS) |
+| **Acer** | ✅ sysfs (`acer-wmi`) | ❌ açık API yok |
+| **Dell** | ✅ sysfs (`dell-wmi-battery` sürücüsüyle) | ❌ açık API yok (Dell Command / BIOS) |
+| **HP** | ⚠️ bazı modellerde sysfs | ❌ açık API yok (HP BIOS) |
+| **LG** | ✅ `battery_care_limit` | ❌ açık API yok |
+| **System76 / Framework / diğerleri** | ✅ evrensel sysfs taraması | ❌ prob sonrası `desteklenmiyor` |
 
-> Linux'ta jenerik `/sys/class/power_supply/BAT*/charge_control_*` **çok marka** çalışır.
-> Windows'ta ortak API yoktur; kapsam marka başına belirlenir.
+> **Linux — tasarımı gereği evrensel.** Arka uç sabit isim listesi kullanmaz;
+> pil dizinini **ve** marka platform dizinlerini tarayıp çekirdeğin sunduğu
+> denetimi kullanır: `charge_control_end_threshold`,
+> `charge_control_start_threshold`, ThinkPad `charge_start/stop_threshold`,
+> `charge_behaviour` (`auto`/`inhibit-charge`), `conservation_mode` ve
+> `battery_care_limit`. Çekirdek bunları standartlaştırdığı için dizüstülerin
+> büyük çoğunluğu kapsanır.
+>
+> **Windows — ortak API yok.** Kapsam marka başına belirlenir; güvenli ve
+> belgelenmiş bir yol yoksa ChargeGuard körlemesine yazmak yerine
+> `desteklenmiyor` der. Kesin hüküm ve öneriler için `chargeguard doctor`
+> (menüde **[9]**) çalıştırın.
 
 ## Kurulum
 
@@ -80,7 +91,8 @@ yetenekler, aralık/nokta ayarı, salt-okuma izleyici ve otomatik başlatma suna
 
 ```
 chargeguard detect            # marka / model / OS
-chargeguard probe             # Windows'ta bulunan WMI sınıfları
+chargeguard doctor            # bu cihaz ne yapabilir? (net hüküm + öneri)
+chargeguard probe             # Windows: bulunan WMI sınıfları + BIOS adayları
 chargeguard caps              # bu cihazın yetenekleri
 chargeguard status            # pil %, AC/DC, eşikler
 chargeguard stop 80           # %80'de durdur
@@ -164,6 +176,7 @@ chargeguard/
 │  ├─ service.js          apply / daemon
 │  ├─ autostart.js        Görev Zamanlayıcı (Win) + systemd (Linux)
 │  ├─ info.js             kullanıcı bilgilendirmeleri
+│  ├─ doctor.js           cihaz başına hüküm + öneri
 │  ├─ wmi.js              Windows WMI / PowerShell yardımcıları
 │  └─ backends/
 │     ├─ index.js            OS + marka + prob ile seçim

@@ -36,16 +36,29 @@ It is **honest by design**: if a device/brand has no supported path, it says
 
 | Brand | Linux | Windows |
 |---|---|---|
-| **Huawei** | ✅ generic sysfs (`huawei-wmi`) | ✅ ACPI-WMI `OemWMIfun` — **verified on a real device** |
-| **Asus** | ✅ generic sysfs (`asus-wmi`) | ⚠️ `AsusAtkWmi_WMNB` — untested (no hardware) |
-| **Lenovo** | ✅ ThinkPad `thinkpad_acpi` / IdeaPad conservation | ❌ no public API (Vantage/BIOS) |
-| **Acer** | ✅ generic sysfs (`acer-wmi`) | ❌ no public API |
-| **Dell** | ⚠️ with the `dell-wmi-battery` driver | ❌ no public API |
-| **HP** | ⚠️ some models via sysfs | ❌ no public API |
-| **Others** (MSI/Samsung/Xiaomi…) | ⚠️ generic sysfs attempted | ❌ `unsupported` after probe |
+| **Huawei** | ✅ sysfs (`huawei-wmi`) | ✅ ACPI-WMI `OemWMIfun` — **verified on a real device** |
+| **Asus** | ✅ sysfs (`asus-wmi`) | ⚠️ `AsusAtkWmi_WMNB` — untested (no hardware) |
+| **Lenovo** | ✅ ThinkPad `charge_*_threshold` / IdeaPad `conservation_mode` | ❌ no public API (Vantage/BIOS) |
+| **Acer** | ✅ sysfs (`acer-wmi`) | ❌ no public API |
+| **Dell** | ✅ sysfs (with the `dell-wmi-battery` driver) | ❌ no public API (Dell Command / BIOS) |
+| **HP** | ⚠️ some models via sysfs | ❌ no public API (HP BIOS) |
+| **LG** | ✅ `battery_care_limit` | ❌ no public API |
+| **System76 / Framework / others** | ✅ universal sysfs scan | ❌ `unsupported` after probe |
 
-> On Linux, generic `/sys/class/power_supply/BAT*/charge_control_*` covers many
-> brands. On Windows there is no common API, so support is a per-brand list.
+> **Linux — universal by design.** The backend does not use a fixed name list:
+> it scans the battery directory **and** vendor platform directories and uses
+> whatever the kernel exposes — `charge_control_end_threshold`,
+> `charge_control_start_threshold`, ThinkPad `charge_start/stop_threshold`,
+> `charge_behaviour` (`auto`/`inhibit-charge`), `conservation_mode` and
+> `battery_care_limit`. Because the kernel standardizes these, this covers the
+> large majority of laptops.
+>
+> **Windows — no common API.** Support is a per-brand list; where a safe,
+> documented path does not exist ChargeGuard reports `unsupported` rather than
+> writing blindly. Run `chargeguard doctor` for a clear verdict and next steps.
+
+Run **`chargeguard doctor`** (or menu **[9]**) on any machine to see exactly what
+works there:
 
 ## Install
 
@@ -81,7 +94,8 @@ auto-start.
 
 ```
 chargeguard detect            # brand / model / OS
-chargeguard probe             # Windows: WMI classes found
+chargeguard doctor            # what can this device do? (clear verdict + steps)
+chargeguard probe             # Windows: WMI classes + BIOS candidates found
 chargeguard caps              # what this device supports
 chargeguard status            # battery %, AC/DC, thresholds
 chargeguard stop 80           # stop charging at 80%
@@ -165,6 +179,7 @@ chargeguard/
 │  ├─ service.js          apply / daemon
 │  ├─ autostart.js        Task Scheduler (Win) + systemd (Linux)
 │  ├─ info.js             user-facing explanations
+│  ├─ doctor.js           per-device verdict + guidance
 │  ├─ wmi.js              Windows WMI / PowerShell helpers
 │  └─ backends/
 │     ├─ index.js            OS + brand + probe selection

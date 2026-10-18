@@ -66,6 +66,57 @@ export function huaweiLimit(lo, hi) {
   return `03 15 01 48 ${h(lo)} ${h(hi)}`;
 }
 
+// ---- Geniş prob: bilinen tüm marka WMI sınıflarını SALT-OKUMA yokla ----
+const CANDIDATE_CLASSES = [
+  ['root\\WMI', 'OemWMIMethod'],                 // Huawei
+  ['root\\WMI', 'AsusAtkWmi_WMNB'],              // Asus
+  ['root\\WMI', 'Lenovo_BatteryChargeMode'],     // Lenovo (bazı ThinkPad)
+  ['root\\WMI', 'Lenovo_BiosSetting'],           // Lenovo BIOS ayarları
+  ['root\\WMI', 'Lenovo_SetBiosSetting'],
+  ['root\\WMI', 'MSI_ACPI'],                     // MSI
+  ['root\\WMI', 'AcerWMI'],                      // Acer
+  ['root\\WMI', 'AcerGameZone'],
+  ['root\\dcim\\sysman', 'DCIM_BIOSEnumeration'],// Dell (DCPM)
+  ['root\\dcim\\sysman', 'DCIM_BIOSService'],
+  ['root\\HP\\InstrumentedBIOS', 'HP_BIOSSetting'],         // HP
+  ['root\\HP\\InstrumentedBIOS', 'HP_BIOSSettingInterface'],
+  ['root\\HP\\InstrumentedBIOS', 'HP_BIOSEnumeration'],
+];
+
+export function probeClasses() {
+  const out = {};
+  for (const [ns, cls] of CANDIDATE_CLASSES) out[`${ns}:${cls}`] = classExists(ns, cls);
+  return out;
+}
+
+// BIOS WMI'si üzerinden şarj/pil ile ilgili AYARLARI OKU (yazma yapmaz).
+// HP (HP_BIOSEnumeration), Dell (DCIM_BIOSEnumeration), Lenovo (Lenovo_BiosSetting).
+export function biosCandidates() {
+  const script = `
+$out = @()
+$sources = @(
+  @{ ns='root\\HP\\InstrumentedBIOS'; cls='HP_BIOSEnumeration' },
+  @{ ns='root\\dcim\\sysman';         cls='DCIM_BIOSEnumeration' },
+  @{ ns='root\\WMI';                  cls='Lenovo_BiosSetting' }
+)
+foreach ($s in $sources) {
+  try {
+    Get-CimInstance -Namespace $s.ns -ClassName $s.cls -ErrorAction Stop | ForEach-Object {
+      $n = $_.AttributeName; if (-not $n) { $n = $_.Name }; if (-not $n) { $n = $_.SettingName }
+      if ($n -and ($n -match 'batter|charge')) {
+        $out += [pscustomobject]@{ source=$s.ns; name=$n; value=$_.CurrentValue; possible=$_.PossibleValues }
+      }
+    }
+  } catch {}
+}
+if ($out.Count -eq 0) { '[]' } else { $out | ConvertTo-Json -Compress -Depth 4 }
+`;
+  const r = psJson(script);
+  if (r.error) return { error: r.error };
+  const data = r.data;
+  return { candidates: Array.isArray(data) ? data : (data ? [data] : []) };
+}
+
 // ---- Asus: ACPI-WMI AsusAtkWmi_WMNB (DSTS/DEVS) ----
 export function asusCall(method, deviceId, value = 0) {
   const id = '0x' + (deviceId >>> 0).toString(16).padStart(8, '0');

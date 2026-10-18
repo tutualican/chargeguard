@@ -12,7 +12,7 @@ Contributions are accepted under the [Apache-2.0](LICENSE) license.
 Requirements: **Node.js >= 18**. No build step is needed to run from source.
 
 ```bash
-git clone https://github.com/OWNER/chargeguard.git
+git clone https://github.com/tutualican/chargeguard.git
 cd chargeguard
 npm install
 npm test                 # run the unit tests

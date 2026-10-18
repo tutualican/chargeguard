@@ -1,6 +1,6 @@
 {
   "name": "chargeguard",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Cross-brand battery charge limiting for Windows and Linux: stop charging at a point or hold a range. Battery only.",
@@ -26,7 +26,8 @@
     "huawei",
     "asus",
     "lenovo",
-    "conservation-mode"
+    "conservation-mode",
+    "battery-care"
   ],
   "bin": {
     "chargeguard": "src/cli.js"
@@ -45,6 +46,7 @@
   ],
   "scripts": {
     "detect": "node src/cli.js detect",
+    "doctor": "node src/cli.js doctor",
     "caps": "node src/cli.js caps",
     "status": "node src/cli.js status",
     "probe": "node src/cli.js probe",

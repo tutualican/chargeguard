@@ -2,8 +2,9 @@
 // ChargeGuard CLI — sadece pil şarj sınırlama (özel proje).
 import { open } from './core.js';
 import { serve } from './server.js';
-import { classExists } from './wmi.js';
+import { probeClasses, biosCandidates } from './wmi.js';
 import { detect } from './detect.js';
+import { doctor } from './doctor.js';
 import { runWatch } from './watch.js';
 import { interactiveMenu } from './menu.js';
 import { applyOnce, runDaemon } from './service.js';
@@ -32,7 +33,8 @@ Kullanım:
   chargeguard                  # MENÜ (argümansız; çift tıklayınca da bu açılır)
   chargeguard menu             # aynı menü
   chargeguard detect           # marka/model/OS
-  chargeguard probe            # Windows'ta bulunan WMI sınıfları
+  chargeguard doctor           # bu cihazda ne yapılabilir? (net hüküm + öneri)
+  chargeguard probe            # Windows'ta bulunan WMI sınıfları + BIOS adayları
   chargeguard caps             # bu cihazın yetenekleri
   chargeguard status           # pil %, AC/DC, eşikler
   chargeguard stop <pct>       # şu yüzdede durdur (40-100)
@@ -55,6 +57,7 @@ async function main() {
 
   switch (cmd) {
     case 'detect': show(app.device); break;
+    case 'doctor': show(doctor()); break;
     case 'caps': show({ device: app.device, backend: app.backend, capabilities: app.capabilities() }); break;
     case 'status': show(app.status()); break;
     case 'stop': show(app.stopAt(Number(args[0]))); break;
@@ -64,12 +67,16 @@ async function main() {
     case 'probe': {
       const device = detect();
       if (device.os !== 'win32') { show({ device, note: 'prob yalnızca Windows için' }); break; }
+      const classes = probeClasses();
+      const found = Object.entries(classes).filter(([, v]) => v).map(([k]) => k);
       show({
         device,
-        classes: {
-          'root\\WMI:OemWMIMethod': classExists('root\\WMI', 'OemWMIMethod'),
-          'root\\WMI:AsusAtkWmi_WMNB': classExists('root\\WMI', 'AsusAtkWmi_WMNB'),
-        },
+        found,
+        classes,
+        bios_candidates: (biosCandidates().candidates || []),
+        ipucu: found.length === 0
+          ? 'Bilinen marka WMI sınıfı yok. BIOS/üretici yazılımı gerekir; bulguları bir issue olarak paylaşın.'
+          : 'Bulunan sınıfları ve BIOS adaylarını bir issue olarak paylaşırsanız destek eklenebilir.',
       });
       break;
     }
@@ -95,7 +102,7 @@ async function main() {
       });
       break;
     }
-    case '--version': case 'version': console.log('0.3.0'); break;
+    case '--version': case 'version': console.log('0.4.0'); break;
     case 'help': case '--help': case '-h': help(); break;
     default: help();
   }

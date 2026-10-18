@@ -9,7 +9,7 @@ This project is pre-1.0; security fixes target the latest release.
 Please **do not** open a public issue for security problems.
 
 Report privately via GitHub's
-[Security Advisories](https://github.com/OWNER/chargeguard/security/advisories/new).
+[Security Advisories](https://github.com/tutualican/chargeguard/security/advisories/new).
 
 Include: affected version, OS, laptop model, steps to reproduce, and impact.
 

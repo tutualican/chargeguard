@@ -4,6 +4,7 @@ import readline from 'node:readline';
 import { execFileSync } from 'node:child_process';
 import { open } from './core.js';
 import { runWatch } from './watch.js';
+import { doctor } from './doctor.js';
 import { readConfig, writeConfig, describeConfig } from './config.js';
 import { autostartStatus, installAutostart, removeAutostart } from './autostart.js';
 import { rangeNote, dropNote } from './info.js';
@@ -62,6 +63,7 @@ export async function interactiveMenu() {
     console.log('  [5] Sınırı kaldır             [6] İzle (salt-okuma, kanıt)');
     console.log('  [7] Otomatik başlatma (arka plan)');
     console.log(IS_WIN ? '  [8] Yönetici olarak yeniden başlat' : '  [8] Yönetici komutu (sudo) göster');
+    console.log('  [9] Bu cihazda ne yapılabilir? (tanı)');
     console.log('  [0] Çıkış');
     console.log('  ' + '-'.repeat(50));
     console.log('  Bilgi: pil FİŞTEYKEN düşmez. Belirlenen alt eşiğe (lo) inmesi için');
@@ -129,6 +131,7 @@ export async function interactiveMenu() {
       if (s7 === '3') { console.log(JSON.stringify(autostartStatus(), null, 2)); await pause(); continue; }
       continue;
     }
+    if (sec === '9') { console.log(JSON.stringify(doctor(), null, 2)); await pause(); continue; }
     if (sec === '8') {
       if (admin) { console.log('Zaten yönetici (root).'); await pause(); continue; }
       if (!IS_WIN) {
